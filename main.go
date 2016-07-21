@@ -14,7 +14,8 @@ import (
 )
 
 var logChannel chan string
-var wg sync.WaitGroup
+var logWg sync.WaitGroup
+var httpWg sync.WaitGroup
 
 func checkErr(err error) {
 	if err != nil {
@@ -60,10 +61,7 @@ func parseTimeLocal(timeLocal string) time.Time {
 	return t
 }
 
-func mainLoop(reader *gonx.Reader, done chan bool) {
-	wg.Add(1)
-	defer wg.Done()
-
+func mainLoop(reader *gonx.Reader) {
 	var nilTime time.Time
 	var lastTime time.Time
 
@@ -111,17 +109,14 @@ func mainLoop(reader *gonx.Reader, done chan bool) {
 
 			lastTime = t
 
+			httpWg.Add(1)
 			go fireHttpRequest(url)
 		}
 	}
-
-	close(logChannel)
-	done <- true
 }
 
 func fireHttpRequest(url string) {
-	wg.Add(1)
-	defer wg.Done()
+	defer httpWg.Done()
 
 	path := prefix + url
 
@@ -144,9 +139,8 @@ func fireHttpRequest(url string) {
 	}
 }
 
-func logLoop(done chan bool) {
-	wg.Add(1)
-	defer wg.Done()
+func logLoop() {
+	defer logWg.Done()
 
 	var writer io.Writer
 
@@ -163,8 +157,6 @@ func logLoop(done chan bool) {
 		_, err := io.WriteString(writer, logMessage)
 		checkErr(err)
 	}
-
-	done <- true
 }
 
 func main() {
@@ -190,10 +182,12 @@ func main() {
 
 	reader := gonx.NewReader(logReader, format)
 
-	done := make(chan bool)
+	httpWg.Add(1)
+	go logLoop()
 
-	go logLoop(done)
-	go mainLoop(reader, done)
+	mainLoop(reader)
 
-	wg.Wait()
+	httpWg.Wait()
+	close(logChannel)
+	logWg.Wait()
 }
