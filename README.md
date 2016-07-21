@@ -9,11 +9,13 @@ go get github.com/Gonzih/replay-nginx-log
 ## Usage
 
 ```
+$ replay-nginx-log --help
+
 Usage of replay-nginx-log:
   -debug
         Print extra debugging information
   -file string
-        Log file name to read. Read from STDIN if file name is '-' (default "dummy")
+        Log file name to read. Read from STDIN if file name is '-' (default "-")
   -format string
         Log format (default "$remote_addr [$time_local] \"$request\" $status $request_length $body_bytes_sent $request_time \"$t_size\" $read_time $gen_time")
   -log string
@@ -26,6 +28,7 @@ Usage of replay-nginx-log:
 
 ```bash
 replay-nginx-log --file my-acces.log --debug --log out.log
+tail -f /var/log/acces.log | replay-nginx-log --prefix http://staging-host --log staging.log
 ```
 
 ## Only GET?
