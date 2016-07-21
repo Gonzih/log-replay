@@ -42,7 +42,7 @@ func parseRequest(requestString string) []string {
 	parsedRequest := strings.SplitN(requestString, " ", 3)
 
 	if len(parsedRequest) != 3 {
-		log.Fatalf("Error while parsing string: %s", requestString)
+		log.Fatalf("ERROR while parsing string: %s", requestString)
 	}
 
 	return parsedRequest
@@ -123,7 +123,7 @@ func fireHttpRequest(url string) {
 	endTime := time.Now()
 
 	if err != nil {
-		log.Printf(`Error "%s" while querying "%s"`, err, path)
+		log.Printf(`ERROR "%s" while querying "%s"`, err, path)
 	} else {
 		status := resp.StatusCode
 		duration := endTime.Sub(startTime).Nanoseconds()
