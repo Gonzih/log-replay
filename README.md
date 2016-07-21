@@ -38,4 +38,4 @@ tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log stagi
 
 ## Only GET?
 
-Yeah, for now only get requests are replayed, not sure if there is need to replay other kind of requests.
+Yeah, for now only get requests are replayed, not sure if there is need to replay other http methods.
