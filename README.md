@@ -27,3 +27,7 @@ Usage of replay-nginx-log:
 ```bash
 replay-nginx-log --file my-acces.log --debug --log out.log
 ```
+
+## Only GET?
+
+Yeah, for now only get requests are replayed, not sure if there is need to replay other kind of requests.
