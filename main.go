@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/satyrius/gonx"
 	"io"
 	"log"
 	"net/http"
@@ -12,6 +11,12 @@ import (
 	"sync"
 	"time"
 )
+
+type LogEntry struct {
+	time   time.Time
+	method string
+	url    string
+}
 
 var logChannel chan string
 var logWg sync.WaitGroup
@@ -41,27 +46,7 @@ func init() {
 	logChannel = make(chan string)
 }
 
-func parseRequest(requestString string) []string {
-	parsedRequest := strings.SplitN(requestString, " ", 3)
-
-	if len(parsedRequest) != 3 {
-		log.Fatalf("ERROR while parsing string: %s", requestString)
-	}
-
-	return parsedRequest
-}
-
-func parseTimeLocal(timeLocal string) time.Time {
-	layout := "2/Jan/2006:15:04:05 -0700"
-
-	t, err := time.Parse(layout, timeLocal)
-
-	checkErr(err)
-
-	return t
-}
-
-func mainLoop(reader *gonx.Reader) {
+func mainLoop(reader *NginxReader) {
 	var nilTime time.Time
 	var lastTime time.Time
 
@@ -75,22 +60,9 @@ func mainLoop(reader *gonx.Reader) {
 			checkErr(err)
 		}
 
-		timeLocal, err := rec.Field("time_local")
-		checkErr(err)
-
-		requestString, err := rec.Field("request")
-		checkErr(err)
-
-		parsedRequest := parseRequest(requestString)
-
-		method := parsedRequest[0]
-		url := parsedRequest[1]
-
-		if method == "GET" {
-			t := parseTimeLocal(timeLocal)
-
+		if rec.method == "GET" {
 			if lastTime != nilTime {
-				differenceUnix := t.Sub(lastTime).Nanoseconds()
+				differenceUnix := rec.time.Sub(lastTime).Nanoseconds()
 
 				if differenceUnix > 0 {
 					durationWithRation := time.Duration(differenceUnix / ratio)
@@ -107,10 +79,10 @@ func mainLoop(reader *gonx.Reader) {
 
 			}
 
-			lastTime = t
+			lastTime = rec.time
 
 			httpWg.Add(1)
-			go fireHttpRequest(url)
+			go fireHttpRequest(rec.url)
 		}
 	}
 }
@@ -182,7 +154,8 @@ func main() {
 		logReader = file
 	}
 
-	reader := gonx.NewReader(logReader, format)
+	reader := NewNginxReader(logReader, format)
+	log.Println(reader)
 
 	logWg.Add(1)
 	go logLoop()
