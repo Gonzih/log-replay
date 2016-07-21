@@ -1,4 +1,4 @@
-# Replay Nginx logs
+# Replay Nginx logs [![Build Status](https://travis-ci.org/Gonzih/replay-nginx-log.svg?branch=master)](https://travis-ci.org/Gonzih/tmuxman)
 
 ## Installation
 
