@@ -1,4 +1,4 @@
-# Replay Nginx/Haproxy logs [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/tmuxman)
+# Replay Nginx/Haproxy logs [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/log-replay)
 
 ## Installation
 
