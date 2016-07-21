@@ -126,6 +126,7 @@ func logLoop() {
 	default:
 		file, err := os.Create(logFile)
 		checkErr(err)
+		defer file.Close()
 		writer = file
 	}
 
