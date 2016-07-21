@@ -58,7 +58,7 @@ func parseTimeLocal(timeLocal string) time.Time {
 	return t
 }
 
-func mainLoop(reader *gonx.Reader) {
+func mainLoop(reader *gonx.Reader, done chan bool) {
 	var nilTime time.Time
 	var lastTime time.Time
 
@@ -109,6 +109,9 @@ func mainLoop(reader *gonx.Reader) {
 			go fireHttpRequest(url)
 		}
 	}
+
+	close(logChannel)
+	done <- true
 }
 
 func fireHttpRequest(url string) {
@@ -133,7 +136,7 @@ func fireHttpRequest(url string) {
 	}
 }
 
-func logLoop() {
+func logLoop(done chan bool) {
 	var writer io.Writer
 
 	switch logFile {
@@ -149,6 +152,8 @@ func logLoop() {
 		_, err := io.WriteString(writer, logMessage)
 		checkErr(err)
 	}
+
+	done <- true
 }
 
 func main() {
@@ -174,8 +179,12 @@ func main() {
 
 	reader := gonx.NewReader(logReader, format)
 
-	go logLoop()
-	mainLoop(reader)
+	done := make(chan bool)
 
-	close(logChannel)
+	go logLoop(done)
+	go mainLoop(reader, done)
+
+	<-done
+	<-done
+
 }
