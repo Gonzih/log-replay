@@ -160,7 +160,6 @@ func main() {
 	}
 
 	reader := NewNginxReader(inputReader, format)
-	log.Println(reader)
 
 	logWg.Add(1)
 	go logLoop()
