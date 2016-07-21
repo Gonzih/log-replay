@@ -27,7 +27,7 @@ func parseRequest(requestString string) ([]string, error) {
 	return parsedRequest, nil
 }
 
-func parseTimeLocal(timeLocal string) time.Time {
+func parseNginxTime(timeLocal string) time.Time {
 	t, err := time.Parse(nginxTimeLayout, timeLocal)
 
 	checkErr(err)
@@ -71,7 +71,7 @@ func (r *NginxReader) Read() (*LogEntry, error) {
 
 	entry.method = parsedRequest[0]
 	entry.url = parsedRequest[1]
-	entry.time = parseTimeLocal(timeLocal)
+	entry.time = parseNginxTime(timeLocal)
 
 	return &entry, nil
 }

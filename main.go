@@ -36,6 +36,7 @@ var format string
 var nginxLogFile string
 var logFile string
 var prefix string
+var logType string
 var ratio int64
 var debug bool
 
@@ -44,6 +45,7 @@ func init() {
 	flag.StringVar(&nginxLogFile, "file", "-", "Log file name to read. Read from STDIN if file name is '-'")
 	flag.StringVar(&logFile, "log", "-", "File to report timings to, default is stdout")
 	flag.StringVar(&prefix, "prefix", "http://localhost", "Url prefix to query")
+	flag.StringVar(&logType, "log-type", "nginx", "Log type (nginx or haproxy)")
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
 
@@ -147,7 +149,11 @@ func main() {
 	}
 
 	if nginxLogFile == "dummy" {
-		inputReader = strings.NewReader(`89.234.89.123 [08/Nov/2013:13:39:18 +0000] "GET /t/100x100/foo/bar.jpeg HTTP/1.1" 200 1027 2430 0.014 "100x100" 10 1`)
+		if logType == "nginx" {
+			inputReader = strings.NewReader(`89.234.89.123 [08/Nov/2013:13:39:18 +0000] "GET /t/100x100/foo/bar.jpeg HTTP/1.1" 200 1027 2430 0.014 "100x100" 10 1`)
+		} else {
+			inputReader = strings.NewReader(`<142>Sep 27 00:15:57 haproxy[28513]: 67.188.214.167:64531 [27/Sep/2013:00:15:43.494] frontend~ test/10.127.57.177-10000 449/0/0/13531/13980 200 13824 - - ---- 6/6/0/1/0 0/0 "GET / HTTP/1.1"`)
+		}
 	} else if nginxLogFile == "-" {
 		inputReader = os.Stdin
 	} else {
@@ -159,7 +165,16 @@ func main() {
 		inputReader = file
 	}
 
-	reader := NewNginxReader(inputReader, format)
+	var reader LogReader
+
+	switch logType {
+	case "nginx":
+		reader = NewNginxReader(inputReader, format)
+	case "haproxy":
+		reader = NewHaproxyReader(inputReader)
+	default:
+		log.Fatalf("log-type can be either haproxy or nginx, not '%s'", logType)
+	}
 
 	logWg.Add(1)
 	go logLoop()
