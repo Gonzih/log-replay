@@ -1,0 +1,6 @@
+hash: e6b29366053982fb18e0b0a3ab2472e0a5b145b33a1270648fc208ba4bc7d608
+updated: 2016-07-20T15:52:48.646439487+02:00
+imports:
+- name: github.com/satyrius/gonx
+  version: 71c9c5956b05290346eb980b79b9beb9db036803
+testImports: []
