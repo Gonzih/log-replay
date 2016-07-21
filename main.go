@@ -18,6 +18,10 @@ type LogEntry struct {
 	url    string
 }
 
+type LogReader interface {
+	Read() (*LogEntry, error)
+}
+
 var logChannel chan string
 var logWg sync.WaitGroup
 var httpWg sync.WaitGroup
@@ -46,7 +50,7 @@ func init() {
 	logChannel = make(chan string)
 }
 
-func mainLoop(reader *NginxReader) {
+func mainLoop(reader LogReader) {
 	var nilTime time.Time
 	var lastTime time.Time
 
@@ -134,7 +138,7 @@ func logLoop() {
 func main() {
 	flag.Parse()
 
-	var logReader io.Reader
+	var inputReader io.Reader
 
 	if debug {
 		log.Printf("Parsing %s log file\n", nginxLogFile)
@@ -142,19 +146,19 @@ func main() {
 	}
 
 	if nginxLogFile == "dummy" {
-		logReader = strings.NewReader(`89.234.89.123 [08/Nov/2013:13:39:18 +0000] "GET /t/100x100/foo/bar.jpeg HTTP/1.1" 200 1027 2430 0.014 "100x100" 10 1`)
+		inputReader = strings.NewReader(`89.234.89.123 [08/Nov/2013:13:39:18 +0000] "GET /t/100x100/foo/bar.jpeg HTTP/1.1" 200 1027 2430 0.014 "100x100" 10 1`)
 	} else if nginxLogFile == "-" {
-		logReader = os.Stdin
+		inputReader = os.Stdin
 	} else {
 		file, err := os.Open(nginxLogFile)
 
 		checkErr(err)
 		defer file.Close()
 
-		logReader = file
+		inputReader = file
 	}
 
-	reader := NewNginxReader(logReader, format)
+	reader := NewNginxReader(inputReader, format)
 	log.Println(reader)
 
 	logWg.Add(1)

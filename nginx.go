@@ -23,13 +23,6 @@ func parseRequest(requestString string) ([]string, error) {
 	return parsedRequest, nil
 }
 
-func NewNginxReader(logReader io.Reader, format string) *NginxReader {
-	var reader NginxReader
-	reader.GonxReader = gonx.NewReader(logReader, format)
-
-	return &reader
-}
-
 func parseTimeLocal(timeLocal string) time.Time {
 	layout := "2/Jan/2006:15:04:05 -0700"
 
@@ -38,6 +31,13 @@ func parseTimeLocal(timeLocal string) time.Time {
 	checkErr(err)
 
 	return t
+}
+
+func NewNginxReader(inputReader io.Reader, format string) LogReader {
+	var reader NginxReader
+	reader.GonxReader = gonx.NewReader(inputReader, format)
+
+	return &reader
 }
 
 func (r *NginxReader) Read() (*LogEntry, error) {
