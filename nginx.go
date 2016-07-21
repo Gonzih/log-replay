@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+const (
+	nginxTimeLayout = "2/Jan/2006:15:04:05 -0700"
+)
+
 type NginxReader struct {
 	GonxReader *gonx.Reader
 }
@@ -24,9 +28,7 @@ func parseRequest(requestString string) ([]string, error) {
 }
 
 func parseTimeLocal(timeLocal string) time.Time {
-	layout := "2/Jan/2006:15:04:05 -0700"
-
-	t, err := time.Parse(layout, timeLocal)
+	t, err := time.Parse(nginxTimeLayout, timeLocal)
 
 	checkErr(err)
 
