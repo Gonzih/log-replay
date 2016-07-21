@@ -1,17 +1,17 @@
-# Replay Nginx logs [![Build Status](https://travis-ci.org/Gonzih/replay-nginx-log.svg?branch=master)](https://travis-ci.org/Gonzih/tmuxman)
+# Replay Nginx/Haproxy logs [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/tmuxman)
 
 ## Installation
 
 ```
-go get github.com/Gonzih/replay-nginx-log
+go get github.com/Gonzih/log-replay
 ```
 
 ## Usage
 
 ```
-$ replay-nginx-log --help
+$ log-replay --help
 
-Usage of replay-nginx-log:
+Usage of log-replay:
   -debug
         Print extra debugging information
   -file string
@@ -20,6 +20,8 @@ Usage of replay-nginx-log:
         Log format (default "$remote_addr [$time_local] \"$request\" $status $request_length $body_bytes_sent $request_time \"$t_size\" $read_time $gen_time")
   -log string
         File to report timings to, default is stdout (default "-")
+  -log-type string
+        Log type (nginx or haproxy) (default "nginx")
   -prefix string
         Url prefix to query (default "http://localhost")
   -ratio int
@@ -28,10 +30,10 @@ Usage of replay-nginx-log:
 
 ```bash
 # Replay access log
-replay-nginx-log --file my-acces.log --debug --log out.log
+log-replay --file my-acces.log --debug --log out.log
 
 # Duplicate traffic on the staging host
-tail -f /var/log/acces.log | replay-nginx-log --prefix http://staging-host --log staging.log
+tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log staging.log
 ```
 
 ## Only GET?
