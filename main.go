@@ -184,7 +184,7 @@ func main() {
 
 	reader := gonx.NewReader(logReader, format)
 
-	httpWg.Add(1)
+	logWg.Add(1)
 	go logLoop()
 
 	mainLoop(reader)
