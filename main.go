@@ -9,10 +9,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 var logChannel chan string
+var wg sync.WaitGroup
 
 func checkErr(err error) {
 	if err != nil {
@@ -59,6 +61,9 @@ func parseTimeLocal(timeLocal string) time.Time {
 }
 
 func mainLoop(reader *gonx.Reader, done chan bool) {
+	wg.Add(1)
+	defer wg.Done()
+
 	var nilTime time.Time
 	var lastTime time.Time
 
@@ -115,6 +120,9 @@ func mainLoop(reader *gonx.Reader, done chan bool) {
 }
 
 func fireHttpRequest(url string) {
+	wg.Add(1)
+	defer wg.Done()
+
 	path := prefix + url
 
 	if debug {
@@ -137,6 +145,9 @@ func fireHttpRequest(url string) {
 }
 
 func logLoop(done chan bool) {
+	wg.Add(1)
+	defer wg.Done()
+
 	var writer io.Writer
 
 	switch logFile {
@@ -184,7 +195,5 @@ func main() {
 	go logLoop(done)
 	go mainLoop(reader, done)
 
-	<-done
-	<-done
-
+	wg.Wait()
 }
