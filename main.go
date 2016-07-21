@@ -164,8 +164,10 @@ func main() {
 
 	var logReader io.Reader
 
-	log.Printf("Parsing %s log file\n", nginxLogFile)
-	log.Printf("Using format %s", format)
+	if debug {
+		log.Printf("Parsing %s log file\n", nginxLogFile)
+		log.Printf("Using format %s", format)
+	}
 
 	if nginxLogFile == "dummy" {
 		logReader = strings.NewReader(`89.234.89.123 [08/Nov/2013:13:39:18 +0000] "GET /t/100x100/foo/bar.jpeg HTTP/1.1" 200 1027 2430 0.014 "100x100" 10 1`)
@@ -187,7 +189,16 @@ func main() {
 
 	mainLoop(reader)
 
+	if debug {
+		log.Println("Waiting for all http goroutines to stop")
+	}
+
 	httpWg.Wait()
 	close(logChannel)
+
+	if debug {
+		log.Println("Waiting for log goroutine to stop")
+	}
+
 	logWg.Wait()
 }
