@@ -41,7 +41,7 @@ var debug bool
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Log format")
-	flag.StringVar(&nginxLogFile, "file", "dummy", "Log file name to read. Read from STDIN if file name is '-'")
+	flag.StringVar(&nginxLogFile, "file", "-", "Log file name to read. Read from STDIN if file name is '-'")
 	flag.StringVar(&logFile, "log", "-", "File to report timings to, default is stdout")
 	flag.StringVar(&prefix, "prefix", "http://localhost", "Url prefix to query")
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
