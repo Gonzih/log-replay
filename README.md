@@ -27,7 +27,10 @@ Usage of replay-nginx-log:
 ```
 
 ```bash
+# Replay access log
 replay-nginx-log --file my-acces.log --debug --log out.log
+
+# Duplicate traffic on the staging host
 tail -f /var/log/acces.log | replay-nginx-log --prefix http://staging-host --log staging.log
 ```
 
