@@ -41,7 +41,7 @@ var ratio int64
 var debug bool
 
 func init() {
-	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Log format")
+	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
 	flag.StringVar(&inputLogFile, "file", "-", "Log file name to read. Read from STDIN if file name is '-'")
 	flag.StringVar(&logFile, "log", "-", "File to report timings to, default is stdout")
 	flag.StringVar(&prefix, "prefix", "http://localhost", "Url prefix to query")

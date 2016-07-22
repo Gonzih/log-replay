@@ -17,10 +17,10 @@ Usage of log-replay:
   -file string
         Log file name to read. Read from STDIN if file name is '-' (default "-")
   -format string
-        Log format (default "$remote_addr [$time_local] \"$request\" $status $request_length $body_bytes_sent $request_time \"$t_size\" $read_time $gen_time")
+        Ngixn log format (default "$remote_addr [$time_local] \"$request\" $status $request_length $body_bytes_sent $request_time \"$t_size\" $read_time $gen_time")
   -log string
         File to report timings to, default is stdout (default "-")
-  -log-type string
+  -file-type string
         Log type (nginx or haproxy) (default "nginx")
   -prefix string
         Url prefix to query (default "http://localhost")
