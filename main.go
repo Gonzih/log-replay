@@ -102,12 +102,26 @@ func fireHttpRequest(url string) {
 		log.Printf("Querying %s\n", path)
 	}
 
+	client := &http.Client{
+		Timeout: time.Minute,
+	}
+
+	req, err := http.NewRequest("GET", path, nil)
+
+	if err != nil {
+		log.Printf("ERROR %s while creating new request to %s", err, path)
+		return
+	}
+
+	req.Header.Set("User-Agent", "Log Replay (github.com/Gonzih/log-replay)")
+
 	startTime := time.Now()
-	resp, err := http.Get(path)
+	resp, err := client.Do(req)
 	endTime := time.Now()
 
 	if err != nil {
 		log.Printf(`ERROR "%s" while querying "%s"`, err, path)
+		return
 	} else {
 		status := resp.StatusCode
 		duration := endTime.Sub(startTime).Nanoseconds()
