@@ -88,12 +88,12 @@ func mainLoop(reader LogReader) {
 			lastTime = rec.Time
 
 			httpWg.Add(1)
-			go fireHttpRequest(rec.Url)
+			go fireHttpRequest(rec.Method, rec.Url)
 		}
 	}
 }
 
-func fireHttpRequest(url string) {
+func fireHttpRequest(method string, url string) {
 	defer httpWg.Done()
 
 	path := prefix + url
@@ -106,7 +106,7 @@ func fireHttpRequest(url string) {
 		Timeout: time.Minute,
 	}
 
-	req, err := http.NewRequest("GET", path, nil)
+	req, err := http.NewRequest(method, path, nil)
 
 	if err != nil {
 		log.Printf("ERROR %s while creating new request to %s", err, path)
