@@ -99,7 +99,7 @@ func fireHttpRequest(url string) {
 	path := prefix + url
 
 	if debug {
-		log.Println("Querying %s", path)
+		log.Printf("Querying %s\n", path)
 	}
 
 	startTime := time.Now()
