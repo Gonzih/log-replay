@@ -13,9 +13,9 @@ import (
 )
 
 type LogEntry struct {
-	time   time.Time
-	method string
-	url    string
+	Time   time.Time
+	Method string
+	Url    string
 }
 
 type LogReader interface {
@@ -66,9 +66,9 @@ func mainLoop(reader LogReader) {
 			checkErr(err)
 		}
 
-		if rec.method == "GET" {
+		if rec.Method == "GET" {
 			if lastTime != nilTime {
-				differenceUnix := rec.time.Sub(lastTime).Nanoseconds()
+				differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
 
 				if differenceUnix > 0 {
 					durationWithRation := time.Duration(differenceUnix / ratio)
@@ -85,10 +85,10 @@ func mainLoop(reader LogReader) {
 
 			}
 
-			lastTime = rec.time
+			lastTime = rec.Time
 
 			httpWg.Add(1)
-			go fireHttpRequest(rec.url)
+			go fireHttpRequest(rec.Url)
 		}
 	}
 }

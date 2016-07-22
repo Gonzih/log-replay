@@ -69,9 +69,9 @@ func (r *NginxReader) Read() (*LogEntry, error) {
 		return &entry, err
 	}
 
-	entry.method = parsedRequest[0]
-	entry.url = parsedRequest[1]
-	entry.time = parseNginxTime(timeLocal)
+	entry.Method = parsedRequest[0]
+	entry.Url = parsedRequest[1]
+	entry.Time = parseNginxTime(timeLocal)
 
 	return &entry, nil
 }

@@ -50,9 +50,9 @@ func parseStringInto(s string, entry *LogEntry) error {
 		return err
 	}
 
-	entry.method = parsedRequest[0]
-	entry.url = parsedRequest[1]
-	entry.time = parseHaproxyTime(dateString)
+	entry.Method = parsedRequest[0]
+	entry.Url = parsedRequest[1]
+	entry.Time = parseHaproxyTime(dateString)
 
 	return nil
 }
