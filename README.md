@@ -34,6 +34,24 @@ log-replay --file my-acces.log --debug --log out.log
 tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log staging.log
 ```
 
+## Output log format
+
+Log is tab separated values:
+
+```
+status	start-time	duration	url	err
+
+# Examples
+200	1469792268	629904766	/my-url
+500	1469792268	629904766	/my-url	Get http://localhost/another-url: dial tcp [::1]:80: getsockopt: connection refused
+```
+
+* status is integer
+* start-time is unix timestamp in seconds
+* duration is in nanoseconds
+* url is full url with prefix
+* error is go lang error formatted to string and is optional
+
 ## Only GET?
 
 Yeah, for now only get requests are replayed, not sure if there is need to replay other http methods.
