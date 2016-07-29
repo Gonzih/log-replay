@@ -106,26 +106,35 @@ func fireHttpRequest(method string, url string) {
 		Timeout: time.Minute,
 	}
 
+	var logMessage string
+	startTime := time.Now()
+	startTS := startTime.Unix()
+
 	req, err := http.NewRequest(method, path, nil)
 
 	if err != nil {
-		log.Printf("ERROR %s while creating new request to %s", err, path)
+		if debug {
+			log.Printf("ERROR %s while creating new request to %s", err, path)
+		}
+
+		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", 500, startTS, 0, url, err)
+		logChannel <- logMessage
+
 		return
 	}
 
 	req.Header.Set("User-Agent", "Log Replay (github.com/Gonzih/log-replay)")
 
-	startTime := time.Now()
 	resp, err := client.Do(req)
 	endTime := time.Now()
 
-	startTS := startTime.Unix()
 	duration := endTime.Sub(startTime).Nanoseconds()
 
-	var logMessage string
-
 	if err != nil {
-		log.Printf(`ERROR "%s" while querying "%s"`, err, path)
+		if debug {
+			log.Printf(`ERROR "%s" while querying "%s"`, err, path)
+		}
+
 		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", 500, startTS, duration, url, err)
 	} else {
 		status := resp.StatusCode
