@@ -1,4 +1,7 @@
-# Replay Nginx/Haproxy logs [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/log-replay)
+# Replay Nginx/Haproxy logs
+
+[![MIT License][license-image]][license-url]
+[![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/log-replay)
 
 ## Installation
 
@@ -55,3 +58,13 @@ status	start-time	duration	url	err
 ## Only GET?
 
 Yeah, for now only get requests are replayed, not sure if there is need to replay other http methods.
+
+## License
+
+[MIT](LICENSE)
+
+[license-url]: LICENSE
+
+[license-image]: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+
+[capture]: capture.png
