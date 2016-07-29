@@ -118,17 +118,18 @@ func fireHttpRequest(method string, url string) {
 	startTime := time.Now()
 	resp, err := client.Do(req)
 	endTime := time.Now()
+	duration := endTime.Sub(startTime).Nanoseconds()
+	var logMessage string
 
 	if err != nil {
 		log.Printf(`ERROR "%s" while querying "%s"`, err, path)
-		return
+		logMessage = fmt.Sprintf("%d\t%d\t%s\t%s\n", 500, duration, url, err)
 	} else {
 		status := resp.StatusCode
-		duration := endTime.Sub(startTime).Nanoseconds()
-		logMessage := fmt.Sprintf("%d %d %s\n", status, duration, url)
-
-		logChannel <- logMessage
+		logMessage = fmt.Sprintf("%d\t%d\t%s\n", status, duration, url)
 	}
+
+	logChannel <- logMessage
 }
 
 func logLoop() {
