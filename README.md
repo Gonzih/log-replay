@@ -39,8 +39,9 @@ tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log stagi
 Log is tab separated values:
 
 ```
-# Examples
 status	start-time	duration	url	err
+
+# Examples
 200	1469792268	629904766	/my-url
 500	1469792268	629904766	/my-url	Get http://localhost/another-url: dial tcp [::1]:80: getsockopt: connection refused
 ```
