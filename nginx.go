@@ -1,18 +1,19 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"github.com/satyrius/gonx"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/satyrius/gonx"
 )
 
 const (
 	nginxTimeLayout = "2/Jan/2006:15:04:05 -0700"
 )
 
+// NginxReader implements LogReader intefrace
 type NginxReader struct {
 	GonxReader *gonx.Reader
 }
@@ -21,7 +22,7 @@ func parseRequest(requestString string) ([]string, error) {
 	parsedRequest := strings.SplitN(requestString, " ", 3)
 
 	if len(parsedRequest) != 3 {
-		return parsedRequest, errors.New(fmt.Sprintf("ERROR while parsing string: %s", requestString))
+		return parsedRequest, fmt.Errorf("ERROR while parsing string: %s", requestString)
 	}
 
 	return parsedRequest, nil
@@ -35,6 +36,7 @@ func parseNginxTime(timeLocal string) time.Time {
 	return t
 }
 
+// NewNginxReader creates new reader for a haproxy log format using provided io.Reader
 func NewNginxReader(inputReader io.Reader, format string) LogReader {
 	var reader NginxReader
 	reader.GonxReader = gonx.NewReader(inputReader, format)
@@ -70,7 +72,7 @@ func (r *NginxReader) Read() (*LogEntry, error) {
 	}
 
 	entry.Method = parsedRequest[0]
-	entry.Url = parsedRequest[1]
+	entry.URL = parsedRequest[1]
 	entry.Time = parseNginxTime(timeLocal)
 
 	return &entry, nil

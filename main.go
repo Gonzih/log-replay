@@ -12,12 +12,14 @@ import (
 	"time"
 )
 
+// LogEntry is single parsed entry from the log file
 type LogEntry struct {
 	Time   time.Time
 	Method string
-	Url    string
+	URL    string
 }
 
+// LogReader provides generic log parser interface
 type LogReader interface {
 	Read() (*LogEntry, error)
 }
@@ -44,7 +46,7 @@ func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
 	flag.StringVar(&inputLogFile, "file", "-", "Log file name to read. Read from STDIN if file name is '-'")
 	flag.StringVar(&logFile, "log", "-", "File to report timings to, default is stdout")
-	flag.StringVar(&prefix, "prefix", "http://localhost", "Url prefix to query")
+	flag.StringVar(&prefix, "prefix", "http://localhost", "URL prefix to query")
 	flag.StringVar(&inputFileType, "file-type", "nginx", "Input log type (nginx or haproxy)")
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
@@ -88,12 +90,12 @@ func mainLoop(reader LogReader) {
 			lastTime = rec.Time
 
 			httpWg.Add(1)
-			go fireHttpRequest(rec.Method, rec.Url)
+			go fireHTTPRequest(rec.Method, rec.URL)
 		}
 	}
 }
 
-func fireHttpRequest(method string, url string) {
+func fireHTTPRequest(method string, url string) {
 	defer httpWg.Done()
 
 	path := prefix + url

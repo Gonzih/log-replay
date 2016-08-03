@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -13,6 +12,7 @@ const (
 	haProxyTsLayout = "2/Jan/2006:15:04:05.000"
 )
 
+// HaproxyReader implements LogReader intefrace
 type HaproxyReader struct {
 	InputReader  io.Reader
 	InputScanner *bufio.Scanner
@@ -31,14 +31,14 @@ func parseStringInto(s string, entry *LogEntry) error {
 	dateEndI := strings.LastIndex(s, "]")
 
 	if dateStartI > dateEndI || dateStartI > len(s) || dateEndI > len(s) {
-		return errors.New(fmt.Sprintf("Issue with date indexes, start: %d, end: %d, len: %d", dateStartI, dateEndI, len(s)))
+		return fmt.Errorf("Issue with date indexes, start: %d, end: %d, len: %d", dateStartI, dateEndI, len(s))
 	}
 
 	requestStartI := strings.Index(s, `"`) + 1
 	requestEndI := len(s) - 1
 
 	if requestStartI > requestEndI || requestStartI > len(s) || requestEndI > len(s) {
-		return errors.New(fmt.Sprintf("Issue with request indexes, start: %d, end: %d, len: %d", requestStartI, requestEndI, len(s)))
+		return fmt.Errorf("Issue with request indexes, start: %d, end: %d, len: %d", requestStartI, requestEndI, len(s))
 	}
 
 	dateString := s[dateStartI:dateEndI]
@@ -51,12 +51,13 @@ func parseStringInto(s string, entry *LogEntry) error {
 	}
 
 	entry.Method = parsedRequest[0]
-	entry.Url = parsedRequest[1]
+	entry.URL = parsedRequest[1]
 	entry.Time = parseHaproxyTime(dateString)
 
 	return nil
 }
 
+// NewHaproxyReader creates new reader for a haproxy log format using provided io.Reader
 func NewHaproxyReader(inputReader io.Reader) LogReader {
 	var reader HaproxyReader
 
