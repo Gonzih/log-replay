@@ -61,9 +61,10 @@ status	start-time	duration	url payload err
 Nginx/Haproxy logs are currently limited to GET only.
 SOLR requests will use post format for everything, as a way to subvert GET length limitations.
 
-## Log formats.
+## Log formats
 
-* *solr* formatting is log4j based. To use the tool, it is required that your line pattern is specified as follows:
+* To correctly use the solr adapter, it is required that the log4 pattern is configured as follows:
+
 ```
 
       <PatternLayout>

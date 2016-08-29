@@ -102,7 +102,7 @@ func fireHTTPRequest(method string, url string, payload string) {
 	path := prefix + url
 
 	if debug {
-		log.Printf("Querying %s\n", path)
+		log.Printf("Querying %s %s %s\n", method, path, payload)
 	}
 
 	client := &http.Client{
@@ -114,6 +114,10 @@ func fireHTTPRequest(method string, url string, payload string) {
 	startTS := startTime.Unix()
 
 	req, err := http.NewRequest(method, path, bytes.NewBufferString(payload))
+
+	if method == "POST" {
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	}
 
 	if err != nil {
 		if debug {
