@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
@@ -195,7 +196,12 @@ func main() {
 		checkErr(err)
 		defer file.Close()
 
-		inputReader = file
+		if strings.HasSuffix(inputLogFile, "gz")  {
+			inputReader, err = gzip.NewReader(file)
+			checkErr(err)
+		} else {
+			inputReader = file
+		}
 	}
 
 	var reader LogReader
