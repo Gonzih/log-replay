@@ -18,7 +18,7 @@ $ log-replay:
   -file string
         Log file name to read. Read from STDIN if file name is '-' (default "-")
   -file-type string
-        Input log type (nginx or haproxy) (default "nginx")
+        Input log type (nginx, haproxy or solr) (default "nginx")
   -format string
         Nginx log format (default "$remote_addr [$time_local] \"$request\" $status $request_length $body_bytes_sent $request_time \"$t_size\" $read_time $gen_time")
   -log string
@@ -42,7 +42,7 @@ tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log stagi
 Log is tab separated values:
 
 ```
-status	start-time	duration	url	err
+status	start-time	duration	url payload err
 
 # Examples
 200	1469792268	629904766	/my-url
@@ -53,11 +53,24 @@ status	start-time	duration	url	err
 * start-time is unix timestamp in seconds
 * duration is in nanoseconds
 * url is full url with prefix
+* payload is stringified post data
 * error is go lang error formatted to string and is optional
 
 ## Only GET?
 
-Yeah, for now only get requests are replayed, not sure if there is need to replay other http methods.
+Nginx/Haproxy logs are currently limited to GET only.
+SOLR requests will use post format for everything, as a way to subvert GET length limitations.
+
+## Log formats.
+
+* *solr* formatting is log4j based. To use the tool, it is required that your line pattern is specified as follows:
+```
+
+      <PatternLayout>
+        <pattern>%d %p %C{1.} [%t] %m%n%ex</pattern>
+      </PatternLayout>
+
+```
 
 ## License
 
