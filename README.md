@@ -66,10 +66,9 @@ SOLR requests will use post format for everything, as a way to subvert GET lengt
 * To correctly use the solr adapter, it is required that the log4 pattern is configured as follows:
 
 ```
-
-      <PatternLayout>
-        <pattern>%d %p %C{1.} [%t] %m%n%ex</pattern>
-      </PatternLayout>
+<PatternLayout>
+  <pattern>%d %p %C{1.} [%t] %m%n%ex</pattern>
+</PatternLayout>
 
 ```
 
