@@ -69,7 +69,6 @@ SOLR requests will use post format for everything, as a way to subvert GET lengt
 <PatternLayout>
   <pattern>%d %p %C{1.} [%t] %m%n%ex</pattern>
 </PatternLayout>
-
 ```
 
 ## License
