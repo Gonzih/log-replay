@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
@@ -17,6 +19,7 @@ type LogEntry struct {
 	Time   time.Time
 	Method string
 	URL    string
+	Payload string
 }
 
 // LogReader provides generic log parser interface
@@ -47,7 +50,7 @@ func init() {
 	flag.StringVar(&inputLogFile, "file", "-", "Log file name to read. Read from STDIN if file name is '-'")
 	flag.StringVar(&logFile, "log", "-", "File to report timings to, default is stdout")
 	flag.StringVar(&prefix, "prefix", "http://localhost", "URL prefix to query")
-	flag.StringVar(&inputFileType, "file-type", "nginx", "Input log type (nginx or haproxy)")
+	flag.StringVar(&inputFileType, "file-type", "nginx", "Input log type (nginx, haproxy or solr)")
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
 
@@ -68,40 +71,39 @@ func mainLoop(reader LogReader) {
 			checkErr(err)
 		}
 
-		if rec.Method == "GET" {
-			if lastTime != nilTime {
-				differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
+		if lastTime != nilTime {
 
-				if differenceUnix > 0 {
-					durationWithRation := time.Duration(differenceUnix / ratio)
+			differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
 
-					if debug {
-						log.Printf("Sleeping for: %.2f seconds", durationWithRation.Seconds())
-					}
-					time.Sleep(durationWithRation)
-				} else {
-					if debug {
-						log.Println("No need for sleep!")
-					}
+			if differenceUnix > 0 {
+				durationWithRation := time.Duration(differenceUnix / ratio)
+
+				if debug {
+					log.Printf("Sleeping for: %.2f seconds", durationWithRation.Seconds())
 				}
-
+				time.Sleep(durationWithRation)
+			} else {
+				if debug {
+					log.Println("No need for sleep!")
+				}
 			}
 
-			lastTime = rec.Time
-
-			httpWg.Add(1)
-			go fireHTTPRequest(rec.Method, rec.URL)
 		}
+
+		lastTime = rec.Time
+
+		httpWg.Add(1)
+		go fireHTTPRequest(rec.Method, rec.URL, rec.Payload)
 	}
 }
 
-func fireHTTPRequest(method string, url string) {
+func fireHTTPRequest(method string, url string, payload string) {
 	defer httpWg.Done()
 
 	path := prefix + url
 
 	if debug {
-		log.Printf("Querying %s\n", path)
+		log.Printf("Querying %s %s %s\n", method, path, payload)
 	}
 
 	client := &http.Client{
@@ -112,14 +114,17 @@ func fireHTTPRequest(method string, url string) {
 	startTime := time.Now()
 	startTS := startTime.Unix()
 
-	req, err := http.NewRequest(method, path, nil)
+	req, err := http.NewRequest(method, path, bytes.NewBufferString(payload))
+
+	if method == "POST" {
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	}
 
 	if err != nil {
 		if debug {
 			log.Printf("ERROR %s while creating new request to %s", err, path)
 		}
-
-		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", 500, startTS, 0, url, err)
+		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\t%s\n", 500, startTS, 0, url, payload, err)
 		logChannel <- logMessage
 
 		return
@@ -137,10 +142,10 @@ func fireHTTPRequest(method string, url string) {
 			log.Printf(`ERROR "%s" while querying "%s"`, err, path)
 		}
 
-		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", 500, startTS, duration, url, err)
+		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\t%s\n", 500, startTS, duration, url, payload, err)
 	} else {
 		status := resp.StatusCode
-		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\n", status, startTS, duration, url)
+		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", status, startTS, duration, url, payload)
 	}
 
 	logChannel <- logMessage
@@ -191,7 +196,12 @@ func main() {
 		checkErr(err)
 		defer file.Close()
 
-		inputReader = file
+		if strings.HasSuffix(inputLogFile, "gz")  {
+			inputReader, err = gzip.NewReader(file)
+			checkErr(err)
+		} else {
+			inputReader = file
+		}
 	}
 
 	var reader LogReader
@@ -201,6 +211,8 @@ func main() {
 		reader = NewNginxReader(inputReader, format)
 	case "haproxy":
 		reader = NewHaproxyReader(inputReader)
+    case "solr":
+		reader = NewSolrReader(inputReader)
 	default:
 		log.Fatalf("file-type can be either haproxy or nginx, not '%s'", inputFileType)
 	}
