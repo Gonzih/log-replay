@@ -16,9 +16,9 @@ import (
 
 // LogEntry is single parsed entry from the log file
 type LogEntry struct {
-	Time   time.Time
-	Method string
-	URL    string
+	Time    time.Time
+	Method  string
+	URL     string
 	Payload string
 }
 
@@ -196,7 +196,7 @@ func main() {
 		checkErr(err)
 		defer file.Close()
 
-		if strings.HasSuffix(inputLogFile, "gz")  {
+		if strings.HasSuffix(inputLogFile, "gz") {
 			inputReader, err = gzip.NewReader(file)
 			checkErr(err)
 		} else {
@@ -211,7 +211,7 @@ func main() {
 		reader = NewNginxReader(inputReader, format)
 	case "haproxy":
 		reader = NewHaproxyReader(inputReader)
-    case "solr":
+	case "solr":
 		reader = NewSolrReader(inputReader)
 	default:
 		log.Fatalf("file-type can be either haproxy or nginx, not '%s'", inputFileType)
