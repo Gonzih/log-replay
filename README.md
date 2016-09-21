@@ -12,7 +12,7 @@ go get -u github.com/Gonzih/log-replay
 ## Usage
 
 ```
-$ log-replay:
+Usage of log-replay:
   -debug
         Print extra debugging information
   -file string
@@ -24,9 +24,11 @@ $ log-replay:
   -log string
         File to report timings to, default is stdout (default "-")
   -prefix string
-        Url prefix to query (default "http://localhost")
+        URL prefix to query (default "http://localhost")
   -ratio int
         Replay speed ratio, higher means faster replay speed (default 1)
+  -timeout int
+        Request timeout in milliseconds, 0 means no timeout (default 60000)
 ```
 
 ```bash
