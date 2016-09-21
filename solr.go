@@ -44,7 +44,7 @@ func parseSolrInto(s string, entry *LogEntry) error {
 	stringParts := strings.Split(s, " ")
 
 	var requestParts [2]string
-	for _,part := range stringParts {
+	for _, part := range stringParts {
 		if strings.HasPrefix(part, "path") {
 			requestParts[0] = part
 		} else if strings.HasPrefix(part, "params") {
@@ -63,9 +63,10 @@ func parseSolrInto(s string, entry *LogEntry) error {
 	entry.URL = path[1]
 	entry.Time = parseSolrTime(dateString)
 	entry.Payload = payload
-	return nil;
+	return nil
 }
 
+// NewSolrReader creates new reader for a solr log format using provided io.Reader
 func NewSolrReader(inputReader io.Reader) LogReader {
 	var reader SolrReader
 
