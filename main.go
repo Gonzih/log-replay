@@ -44,6 +44,7 @@ var prefix string
 var inputFileType string
 var ratio int64
 var debug bool
+var clientTimeout int64
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
@@ -53,6 +54,7 @@ func init() {
 	flag.StringVar(&inputFileType, "file-type", "nginx", "Input log type (nginx, haproxy or solr)")
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
+	flag.Int64Var(&clientTimeout, "timeout", 60000, "Request timeout in milliseconds, 0 means no timeout")
 
 	logChannel = make(chan string)
 }
@@ -107,7 +109,7 @@ func fireHTTPRequest(method string, url string, payload string) {
 	}
 
 	client := &http.Client{
-		Timeout: time.Minute,
+		Timeout: time.Duration(clientTimeout) * time.Millisecond,
 	}
 
 	var logMessage string
