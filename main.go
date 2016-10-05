@@ -135,9 +135,8 @@ func fireHTTPRequest(method string, url string, payload string) {
 	req.Header.Set("User-Agent", "Log Replay (github.com/Gonzih/log-replay)")
 
 	resp, err := client.Do(req)
-	endTime := time.Now()
 
-	duration := endTime.Sub(startTime).Nanoseconds()
+	duration := time.Since(startTime).Nanoseconds()
 
 	if err != nil {
 		if debug {
