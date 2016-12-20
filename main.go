@@ -73,23 +73,25 @@ func mainLoop(reader LogReader) {
 			checkErr(err)
 		}
 
-		if lastTime != nilTime {
+		if rec.Method == "GET" || inputFileType == "solr" {
+			if lastTime != nilTime {
 
-			differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
+				differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
 
-			if differenceUnix > 0 {
-				durationWithRation := time.Duration(differenceUnix / ratio)
+				if differenceUnix > 0 {
+					durationWithRation := time.Duration(differenceUnix / ratio)
 
-				if debug {
-					log.Printf("Sleeping for: %.2f seconds", durationWithRation.Seconds())
+					if debug {
+						log.Printf("Sleeping for: %.2f seconds", durationWithRation.Seconds())
+					}
+					time.Sleep(durationWithRation)
+				} else {
+					if debug {
+						log.Println("No need for sleep!")
+					}
 				}
-				time.Sleep(durationWithRation)
-			} else {
-				if debug {
-					log.Println("No need for sleep!")
-				}
+
 			}
-
 		}
 
 		lastTime = rec.Time
