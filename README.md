@@ -1,4 +1,4 @@
-# Replay Nginx/Haproxy logs
+# Replay Nginx/Haproxy/SOLR logs
 
 [![MIT License][license-image]][license-url]
 [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/log-replay)
