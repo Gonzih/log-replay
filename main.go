@@ -56,7 +56,7 @@ func init() {
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
 	flag.Int64Var(&clientTimeout, "timeout", 60000, "Request timeout in milliseconds, 0 means no timeout")
-	flag.BoolVar(&skipSleep, "skip-sleep", false, "Skip sleep between http calls based on log timestapms (usefull for stdin log processing)")
+	flag.BoolVar(&skipSleep, "skip-sleep", false, "Skip sleep between http calls based on log timestapms")
 
 	logChannel = make(chan string)
 }
