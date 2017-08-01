@@ -45,6 +45,7 @@ var inputFileType string
 var ratio int64
 var debug bool
 var clientTimeout int64
+var skipSleep bool
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
@@ -55,6 +56,7 @@ func init() {
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
 	flag.Int64Var(&clientTimeout, "timeout", 60000, "Request timeout in milliseconds, 0 means no timeout")
+	flag.BoolVar(&skipSleep, "skip-sleep", false, "Skip sleep between http calls based on log timestapms (usefull for stdin log processing)")
 
 	logChannel = make(chan string)
 }
@@ -73,7 +75,7 @@ func mainLoop(reader LogReader) {
 			checkErr(err)
 		}
 
-		if rec.Method == "GET" || inputFileType == "solr" {
+		if (rec.Method == "GET" || inputFileType == "solr") && !skipSleep {
 			if lastTime != nilTime {
 
 				differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
