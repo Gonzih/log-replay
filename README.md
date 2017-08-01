@@ -81,6 +81,6 @@ SOLR requests will use post format for everything, as a way to subvert GET lengt
 
 [license-url]: LICENSE
 
-[license-image]: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+[license-image]: https://img.shields.io/github/license/mashape/apistatus.svg
 
 [capture]: capture.png
