@@ -75,7 +75,7 @@ func mainLoop(reader LogReader) {
 			checkErr(err)
 		}
 
-		if (rec.Method == "GET" || inputFileType == "solr") && !skipSleep {
+		if !skipSleep {
 			if lastTime != nilTime {
 
 				differenceUnix := rec.Time.Sub(lastTime).Nanoseconds()
@@ -94,9 +94,9 @@ func mainLoop(reader LogReader) {
 				}
 
 			}
-		}
 
-		lastTime = rec.Time
+			lastTime = rec.Time
+		}
 
 		httpWg.Add(1)
 		go fireHTTPRequest(rec.Method, rec.URL, rec.Payload)
