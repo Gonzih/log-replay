@@ -38,7 +38,7 @@ Usage of log-replay:
 log-replay --file my-acces.log --debug --log out.log
 
 # Duplicate traffic on the staging host
-tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log staging.log
+tail -f /var/log/acces.log | log-replay --prefix http://staging-host --log staging.log --skip-sleep
 ```
 
 ## Output log format
