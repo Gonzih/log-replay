@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	. "github.com/mxmCherry/movavg"
 )
 
 // LogEntry is single parsed entry from the log file
@@ -27,6 +29,7 @@ type LogReader interface {
 	Read() (*LogEntry, error)
 }
 
+var windowChannel chan int8
 var logChannel chan string
 var logWg sync.WaitGroup
 var httpWg sync.WaitGroup
@@ -37,6 +40,8 @@ func checkErr(err error) {
 	}
 }
 
+var ma *SMA
+
 var format string
 var inputLogFile string
 var logFile string
@@ -46,6 +51,9 @@ var ratio int64
 var debug bool
 var clientTimeout int64
 var skipSleep bool
+var enableWindow bool
+var windowSize int
+var errorRate float64
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
@@ -56,7 +64,10 @@ func init() {
 	flag.Int64Var(&ratio, "ratio", 1, "Replay speed ratio, higher means faster replay speed")
 	flag.BoolVar(&debug, "debug", false, "Print extra debugging information")
 	flag.Int64Var(&clientTimeout, "timeout", 60000, "Request timeout in milliseconds, 0 means no timeout")
-	flag.BoolVar(&skipSleep, "skip-sleep", false, "Skip sleep between http calls based on log timestapms")
+	flag.BoolVar(&skipSleep, "skip-sleep", false, "Skip sleep between http calls based on log timestamps")
+	flag.BoolVar(&enableWindow, "enable-window", false, "Enable rolling window functionality to stop log replaying in case of failure")
+	flag.IntVar(&windowSize, "window-size", 1000, "Size of the window to track response status")
+	flag.Float64Var(&errorRate, "error-rate", 40, "Percentage of the error to stop log replaying (min:1, max:99)")
 
 	logChannel = make(chan string)
 }
@@ -117,6 +128,8 @@ func fireHTTPRequest(method string, url string, payload string) {
 	}
 
 	var logMessage string
+	var windowStatus int8
+
 	startTime := time.Now()
 	startTS := startTime.Unix()
 
@@ -146,13 +159,17 @@ func fireHTTPRequest(method string, url string, payload string) {
 		if debug {
 			log.Printf(`ERROR "%s" while querying "%s"`, err, path)
 		}
-
+		windowStatus = 1
 		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\t%s\n", 500, startTS, duration, url, payload, err)
 	} else {
+		windowStatus = 0
 		status := resp.StatusCode
 		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", status, startTS, duration, url, payload)
 	}
 
+	if enableWindow {
+		windowChannel <- windowStatus
+	}
 	logChannel <- logMessage
 }
 
@@ -174,6 +191,17 @@ func logLoop() {
 	for logMessage := range logChannel {
 		_, err := io.WriteString(writer, logMessage)
 		checkErr(err)
+	}
+}
+
+func windowLoop() {
+	var counter = 0
+	for elem := range windowChannel {
+		counter += 1
+		ma.Add(float64(elem))
+		if counter >= windowSize && ma.Avg() >= errorRate/100 {
+			os.Exit(1)
+		}
 	}
 }
 
@@ -225,6 +253,12 @@ func main() {
 	logWg.Add(1)
 	go logLoop()
 
+	if enableWindow {
+		windowChannel = make(chan int8)
+		ma = NewSMA(windowSize)
+		go windowLoop()
+	}
+
 	mainLoop(reader)
 
 	if debug {
@@ -233,6 +267,7 @@ func main() {
 
 	httpWg.Wait()
 	close(logChannel)
+	close(windowChannel)
 
 	if debug {
 		log.Println("Waiting for log goroutine to stop")
