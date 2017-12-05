@@ -1,3 +1,4 @@
 package: golang-nginx-log-replayer
 import:
 - package: github.com/satyrius/gonx
+- package: github.com/mxmCherry/movavg

@@ -31,6 +31,12 @@ Usage of log-replay:
     	Skip sleep between http calls based on log timestapms
   -timeout int
     	Request timeout in milliseconds, 0 means no timeout (default 60000)
+  -enable-window
+        Enable rolling window functionality to stop log replaying in case of failure (default false)
+  -window-size
+        Size of the window to track response status (default 1000)
+  -error-rate
+        Percentage of the error to stop log replaying (min:1, max:99, default 40)
 ```
 
 ```bash
