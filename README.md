@@ -2,6 +2,7 @@
 
 [![MIT License][license-image]][license-url]
 [![Build Status](https://travis-ci.org/Gonzih/log-replay.svg?branch=master)](https://travis-ci.org/Gonzih/log-replay)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Gonzih/log-replay)](https://goreportcard.com/report/github.com/Gonzih/log-replay)
 
 ## Installation
 
