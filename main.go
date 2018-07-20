@@ -264,6 +264,7 @@ func main() {
 		windowChannel = make(chan int8)
 		ma = NewSMA(windowSize)
 		go windowLoop()
+		defer close(windowChannel)
 	}
 
 	mainLoop(reader)
@@ -274,7 +275,6 @@ func main() {
 
 	httpWg.Wait()
 	close(logChannel)
-	close(windowChannel)
 
 	if debug {
 		log.Println("Waiting for log goroutine to stop")
