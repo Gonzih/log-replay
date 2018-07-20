@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"io"
@@ -54,6 +55,7 @@ var skipSleep bool
 var enableWindow bool
 var windowSize int
 var errorRate float64
+var sslSkipVerify bool
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
@@ -68,6 +70,7 @@ func init() {
 	flag.BoolVar(&enableWindow, "enable-window", false, "Enable rolling window functionality to stop log replaying in case of failure")
 	flag.IntVar(&windowSize, "window-size", 1000, "Size of the window to track response status")
 	flag.Float64Var(&errorRate, "error-rate", 40, "Percentage of the error to stop log replaying (min:1, max:99)")
+	flag.BoolVar(&sslSkipVerify, "ssl-skip-verify", false, "Should HTTP client ignore ssl errors")
 
 	logChannel = make(chan string)
 }
@@ -207,6 +210,10 @@ func windowLoop() {
 
 func main() {
 	flag.Parse()
+
+	if sslSkipVerify {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
 
 	var inputReader io.Reader
 
