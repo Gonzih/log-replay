@@ -2,3 +2,10 @@ language: go
 
 go:
   - tip
+
+before_script:
+  - go get -u golang.org/x/vgo
+
+script:
+  - vgo build .
+  - ./log-replay --file dummy
