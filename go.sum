@@ -1,4 +1,6 @@
 github.com/mxmCherry/movavg v0.0.0-20170611102958-f9901683ba37 h1:J9OhGuyzRD0mGf4zr9OzC03yIKqqIMRT8nh9cFXZTzE=
 github.com/mxmCherry/movavg v0.0.0-20170611102958-f9901683ba37/go.mod h1:8Jn4ovhDwtfTnwqxAEKKHTbKXLgnozsIRg+/Ge6EoJI=
+github.com/mxmCherry/movavg v1.1.0 h1:92Ye8RKXcIaELZJH1pKSdDdh3k7+6tD6Yr+Azxwy3v8=
+github.com/mxmCherry/movavg v1.1.0/go.mod h1:8Jn4ovhDwtfTnwqxAEKKHTbKXLgnozsIRg+/Ge6EoJI=
 github.com/satyrius/gonx v0.0.0-20170227155058-ccfdceb7de02 h1:Cs67CSi1U1W7WIWSdo3brbbFzURqYGPffAM7b6eawC0=
 github.com/satyrius/gonx v0.0.0-20170227155058-ccfdceb7de02/go.mod h1:+r8KNe5d2tjkZU+DfhERo0G6KxkGih+1qYF6tqLHwvk=
