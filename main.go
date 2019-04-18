@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/mxmCherry/movavg"
+	"github.com/mxmCherry/movavg"
 )
 
 // LogEntry is single parsed entry from the log file
@@ -41,7 +41,7 @@ func checkErr(err error) {
 	}
 }
 
-var ma *SMA
+var ma *movavg.SMA
 
 var format string
 var inputLogFile string
@@ -262,7 +262,7 @@ func main() {
 
 	if enableWindow {
 		windowChannel = make(chan int8)
-		ma = NewSMA(windowSize)
+		ma = movavg.NewSMA(windowSize)
 		go windowLoop()
 		defer close(windowChannel)
 	}
