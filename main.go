@@ -14,32 +14,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Gonzih/log-replay/pkg/reader"
+	"github.com/Gonzih/log-replay/pkg/reader/haproxy"
+	"github.com/Gonzih/log-replay/pkg/reader/nginx"
+	"github.com/Gonzih/log-replay/pkg/reader/solr"
 	"github.com/mxmCherry/movavg"
 )
-
-// LogEntry is single parsed entry from the log file
-type LogEntry struct {
-	Time    time.Time
-	Method  string
-	URL     string
-	Payload string
-}
-
-// LogReader provides generic log parser interface
-type LogReader interface {
-	Read() (*LogEntry, error)
-}
 
 var windowChannel chan int8
 var logChannel chan string
 var logWg sync.WaitGroup
 var httpWg sync.WaitGroup
-
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 var ma *movavg.SMA
 
@@ -79,18 +64,18 @@ func init() {
 	logChannel = make(chan string)
 }
 
-func mainLoop(reader LogReader) {
+func mainLoop(rdr reader.LogReader) {
 	var nilTime time.Time
 	var lastTime time.Time
 
 	for {
-		rec, err := reader.Read()
+		rec, err := rdr.Read()
 
 		if err == io.EOF {
 			log.Println("Reached EOF")
 			break
 		} else {
-			checkErr(err)
+			reader.Must(err)
 		}
 
 		if !skipSleep {
@@ -193,14 +178,14 @@ func logLoop() {
 		writer = os.Stdout
 	default:
 		file, err := os.Create(logFile)
-		checkErr(err)
+		reader.Must(err)
 		defer file.Close()
 		writer = file
 	}
 
 	for logMessage := range logChannel {
 		_, err := io.WriteString(writer, logMessage)
-		checkErr(err)
+		reader.Must(err)
 	}
 }
 
@@ -240,26 +225,26 @@ func main() {
 	} else {
 		file, err := os.Open(inputLogFile)
 
-		checkErr(err)
+		reader.Must(err)
 		defer file.Close()
 
 		if strings.HasSuffix(inputLogFile, "gz") {
 			inputReader, err = gzip.NewReader(file)
-			checkErr(err)
+			reader.Must(err)
 		} else {
 			inputReader = file
 		}
 	}
 
-	var reader LogReader
+	var reader reader.LogReader
 
 	switch inputFileType {
 	case "nginx":
-		reader = NewNginxReader(inputReader, format)
+		reader = nginx.NewReader(inputReader, format)
 	case "haproxy":
-		reader = NewHaproxyReader(inputReader)
+		reader = haproxy.NewReader(inputReader)
 	case "solr":
-		reader = NewSolrReader(inputReader)
+		reader = solr.NewReader(inputReader)
 	default:
 		log.Fatalf("file-type can be either haproxy or nginx, not '%s'", inputFileType)
 	}

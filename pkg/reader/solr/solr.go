@@ -1,4 +1,4 @@
-package main
+package solr
 
 import (
 	"bufio"
@@ -7,13 +7,15 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Gonzih/log-replay/pkg/reader"
 )
 
 const (
 	solrProxyTsLayout = "2006-01-02 15:04:05.000"
 )
 
-// SolrReader implements LogReader intefrace
+// SolrReader implements reader.LogReader intefrace
 type SolrReader struct {
 	InputReader  io.Reader
 	InputScanner *bufio.Scanner
@@ -22,7 +24,7 @@ type SolrReader struct {
 func parseSolrTime(timeLocal string) time.Time {
 	t, err := time.Parse(solrProxyTsLayout, timeLocal)
 
-	checkErr(err)
+	reader.Must(err)
 
 	return t
 }
@@ -36,7 +38,7 @@ func parseSolrPayload(params string) (string, error) {
 	return matches[1], nil
 }
 
-func parseSolrInto(s string, entry *LogEntry) error {
+func parseSolrInto(s string, entry *reader.LogEntry) error {
 	if len(s) < 23 {
 		return fmt.Errorf("This log line does not seem to contain a valid timestamp.")
 	}
@@ -66,8 +68,8 @@ func parseSolrInto(s string, entry *LogEntry) error {
 	return nil
 }
 
-// NewSolrReader creates new reader for a solr log format using provided io.Reader
-func NewSolrReader(inputReader io.Reader) LogReader {
+// NewReader creates new reader for a solr log format using provided io.Reader
+func NewReader(inputReader io.Reader) reader.LogReader {
 	var reader SolrReader
 
 	reader.InputReader = inputReader
@@ -76,8 +78,8 @@ func NewSolrReader(inputReader io.Reader) LogReader {
 	return &reader
 }
 
-func (r *SolrReader) Read() (*LogEntry, error) {
-	var entry LogEntry
+func (r *SolrReader) Read() (*reader.LogEntry, error) {
+	var entry reader.LogEntry
 
 	inputAvailable := r.InputScanner.Scan()
 

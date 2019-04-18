@@ -1,11 +1,10 @@
-package main
+package nginx
 
 import (
-	"fmt"
 	"io"
-	"strings"
 	"time"
 
+	"github.com/Gonzih/log-replay/pkg/reader"
 	"github.com/satyrius/gonx"
 )
 
@@ -13,39 +12,29 @@ const (
 	nginxTimeLayout = "2/Jan/2006:15:04:05 -0700"
 )
 
-// NginxReader implements LogReader intefrace
+// NginxReader implements reader.LogReader intefrace
 type NginxReader struct {
 	GonxReader *gonx.Reader
-}
-
-func parseRequest(requestString string) ([]string, error) {
-	parsedRequest := strings.SplitN(requestString, " ", 3)
-
-	if len(parsedRequest) != 3 {
-		return parsedRequest, fmt.Errorf("ERROR while parsing string: %s", requestString)
-	}
-
-	return parsedRequest, nil
 }
 
 func parseNginxTime(timeLocal string) time.Time {
 	t, err := time.Parse(nginxTimeLayout, timeLocal)
 
-	checkErr(err)
+	reader.Must(err)
 
 	return t
 }
 
-// NewNginxReader creates new reader for a haproxy log format using provided io.Reader
-func NewNginxReader(inputReader io.Reader, format string) LogReader {
+// NewReader creates new reader for a haproxy log format using provided io.Reader
+func NewReader(inputReader io.Reader, format string) reader.LogReader {
 	var reader NginxReader
 	reader.GonxReader = gonx.NewReader(inputReader, format)
 
 	return &reader
 }
 
-func (r *NginxReader) Read() (*LogEntry, error) {
-	var entry LogEntry
+func (r *NginxReader) Read() (*reader.LogEntry, error) {
+	var entry reader.LogEntry
 
 	rec, err := r.GonxReader.Read()
 
@@ -65,7 +54,7 @@ func (r *NginxReader) Read() (*LogEntry, error) {
 		return &entry, err
 	}
 
-	parsedRequest, err := parseRequest(requestString)
+	parsedRequest, err := reader.ParseRequest(requestString)
 
 	if err != nil {
 		return &entry, err

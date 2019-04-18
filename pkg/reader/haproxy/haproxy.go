@@ -1,4 +1,4 @@
-package main
+package haproxy
 
 import (
 	"bufio"
@@ -6,13 +6,15 @@ import (
 	"io"
 	"strings"
 	"time"
+
+	"github.com/Gonzih/log-replay/pkg/reader"
 )
 
 const (
 	haProxyTsLayout = "2/Jan/2006:15:04:05.000"
 )
 
-// HaproxyReader implements LogReader intefrace
+// HaproxyReader implements reader.LogReader intefrace
 type HaproxyReader struct {
 	InputReader  io.Reader
 	InputScanner *bufio.Scanner
@@ -21,12 +23,12 @@ type HaproxyReader struct {
 func parseHaproxyTime(timeLocal string) time.Time {
 	t, err := time.Parse(haProxyTsLayout, timeLocal)
 
-	checkErr(err)
+	reader.Must(err)
 
 	return t
 }
 
-func parseStringInto(s string, entry *LogEntry) error {
+func parseStringInto(s string, entry *reader.LogEntry) error {
 	dateStartI := strings.LastIndex(s, "[") + 1
 	dateEndI := strings.LastIndex(s, "]")
 
@@ -44,7 +46,7 @@ func parseStringInto(s string, entry *LogEntry) error {
 	dateString := s[dateStartI:dateEndI]
 	requestString := s[requestStartI:requestEndI]
 
-	parsedRequest, err := parseRequest(requestString)
+	parsedRequest, err := reader.ParseRequest(requestString)
 
 	if err != nil {
 		return err
@@ -57,8 +59,8 @@ func parseStringInto(s string, entry *LogEntry) error {
 	return nil
 }
 
-// NewHaproxyReader creates new reader for a haproxy log format using provided io.Reader
-func NewHaproxyReader(inputReader io.Reader) LogReader {
+// NewReader creates new reader for a haproxy log format using provided io.Reader
+func NewReader(inputReader io.Reader) reader.LogReader {
 	var reader HaproxyReader
 
 	reader.InputReader = inputReader
@@ -67,8 +69,8 @@ func NewHaproxyReader(inputReader io.Reader) LogReader {
 	return &reader
 }
 
-func (r *HaproxyReader) Read() (*LogEntry, error) {
-	var entry LogEntry
+func (r *HaproxyReader) Read() (*reader.LogEntry, error) {
+	var entry reader.LogEntry
 
 	inputAvailable := r.InputScanner.Scan()
 
