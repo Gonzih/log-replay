@@ -56,6 +56,8 @@ var enableWindow bool
 var windowSize int
 var errorRate float64
 var sslSkipVerify bool
+var basicAuthUser string
+var basicAuthPassword string
 
 func init() {
 	flag.StringVar(&format, "format", `$remote_addr [$time_local] "$request" $status $request_length $body_bytes_sent $request_time "$t_size" $read_time $gen_time`, "Nginx log format")
@@ -71,6 +73,8 @@ func init() {
 	flag.IntVar(&windowSize, "window-size", 1000, "Size of the window to track response status")
 	flag.Float64Var(&errorRate, "error-rate", 40, "Percentage of the error to stop log replaying (min:1, max:99)")
 	flag.BoolVar(&sslSkipVerify, "ssl-skip-verify", false, "Should HTTP client ignore ssl errors")
+	flag.StringVar(&basicAuthUser, "user-name", "", "Basic auth username")
+	flag.StringVar(&basicAuthPassword, "password", "", "Basic auth password")
 
 	logChannel = make(chan string)
 }
@@ -106,7 +110,6 @@ func mainLoop(reader LogReader) {
 						log.Println("No need for sleep!")
 					}
 				}
-
 			}
 
 			lastTime = rec.Time
@@ -140,6 +143,10 @@ func fireHTTPRequest(method string, url string, payload string) {
 
 	if method == "POST" {
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	if len(basicAuthUser) > 0 && len(basicAuthPassword) > 0 {
+		req.SetBasicAuth(basicAuthUser, basicAuthPassword)
 	}
 
 	if err != nil {
