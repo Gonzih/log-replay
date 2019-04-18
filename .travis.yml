@@ -4,8 +4,7 @@ go:
   - tip
 
 before_script:
-  - go get -u golang.org/x/vgo
 
 script:
-  - vgo build .
+  - go build
   - ./log-replay --file dummy
