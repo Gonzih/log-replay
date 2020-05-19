@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -64,9 +65,14 @@ func init() {
 	logChannel = make(chan string)
 }
 
-func mainLoop(rdr reader.LogReader) {
+func mainLoop(rdr reader.LogReader, transport *http.Transport) {
 	var nilTime time.Time
 	var lastTime time.Time
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   time.Duration(clientTimeout) * time.Millisecond,
+	}
 
 	for {
 		rec, err := rdr.Read()
@@ -101,21 +107,17 @@ func mainLoop(rdr reader.LogReader) {
 		}
 
 		httpWg.Add(1)
-		go fireHTTPRequest(rec.Method, rec.URL, rec.Payload)
+		go fireHTTPRequest(client, rec.Method, rec.URL, rec.Payload)
 	}
 }
 
-func fireHTTPRequest(method string, url string, payload string) {
+func fireHTTPRequest(client *http.Client, method string, url string, payload string) {
 	defer httpWg.Done()
 
 	path := prefix + url
 
 	if debug {
 		log.Printf("Querying %s %s %s\n", method, path, payload)
-	}
-
-	client := &http.Client{
-		Timeout: time.Duration(clientTimeout) * time.Millisecond,
 	}
 
 	var logMessage string
@@ -148,6 +150,11 @@ func fireHTTPRequest(method string, url string, payload string) {
 
 	resp, err := client.Do(req)
 
+	if (err == nil) {
+		_, err = io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
+	}
+
 	duration := time.Since(startTime).Nanoseconds()
 
 	if err != nil {
@@ -161,6 +168,7 @@ func fireHTTPRequest(method string, url string, payload string) {
 		status := resp.StatusCode
 		logMessage = fmt.Sprintf("%d\t%d\t%d\t%s\t%s\n", status, startTS, duration, url, payload)
 	}
+
 
 	if enableWindow {
 		windowChannel <- windowStatus
@@ -203,8 +211,13 @@ func windowLoop() {
 func main() {
 	flag.Parse()
 
+	transport := &http.Transport{
+		MaxIdleConns:    10,
+		IdleConnTimeout: 10 * time.Second,
+	}
+
 	if sslSkipVerify {
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	var inputReader io.Reader
@@ -259,7 +272,7 @@ func main() {
 		defer close(windowChannel)
 	}
 
-	mainLoop(reader)
+	mainLoop(reader, transport)
 
 	if debug {
 		log.Println("Waiting for all http goroutines to stop")
