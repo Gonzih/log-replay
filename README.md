@@ -7,7 +7,7 @@
 ## Installation
 
 ```
-go get -u github.com/Gonzih/log-replay
+go install github.com/Gonzih/log-replay@latest
 ```
 
 ## Usage
